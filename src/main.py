@@ -6,6 +6,7 @@ from fastapi.responses import JSONResponse
 
 from api.dictionaries import router as dictionaries_router
 from api.filters import router as filters_router
+from api.vacancies import router as vacancies_router
 from core.exceptions import AppError
 from settings import settings
 from utils.configure_sentry import configure_sentry
@@ -27,6 +28,7 @@ async def lifespan(_: FastAPI):
 app = FastAPI(title=settings.app_title, debug=settings.debug, lifespan=lifespan)
 app.include_router(dictionaries_router)
 app.include_router(filters_router)
+app.include_router(vacancies_router)
 
 
 @app.get("/health", tags=["Health"])

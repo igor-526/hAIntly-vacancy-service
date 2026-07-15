@@ -20,6 +20,7 @@ class Settings(BaseSettings):
     postgres_host: str = Field(default="localhost", alias="POSTGRES_HOST")
     postgres_port: int = Field(default=5432, alias="POSTGRES_PORT")
     postgres_db: str = Field(default="app", alias="POSTGRES_DB")
+    hh_app_token: str = Field(alias="HH_APP_TOKEN", min_length=10)
     hh_api_url: AnyHttpUrl = Field(alias="HH_API_URL")
     hh_user_agent: str = Field(alias="HH_USER_AGENT", min_length=3)
     hh_timeout_seconds: float = Field(default=10, alias="HH_TIMEOUT_SECONDS", gt=0)
@@ -31,6 +32,8 @@ class Settings(BaseSettings):
     dictionary_lock_ttl_seconds: int = Field(default=900, alias="DICTIONARY_LOCK_TTL_SECONDS", gt=0)
     dictionary_max_age_hours: int = Field(alias="VACANCY_DICTIONARY_MAX_AGE_HOURS", gt=0)
     dictionary_seed_timeout_seconds: int = Field(default=900, alias="DICTIONARY_SEED_TIMEOUT_SECONDS", gt=0)
+    profile_service_url: AnyHttpUrl = Field(alias="PROFILE_SERVICE_URL")
+    profile_service_timeout_seconds: float = Field(default=5, alias="PROFILE_SERVICE_TIMEOUT_SECONDS", gt=0)
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
