@@ -1,10 +1,23 @@
+import os
 from collections.abc import AsyncIterator
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.pool import NullPool
 
-from models.dictionaries import (
+# Settings is instantiated during application module imports. Keep these test-only
+# values before every src import so pytest collection does not depend on a local
+# .env file. setdefault preserves real values loaded by make test-infra.
+os.environ.setdefault("HH_APP_TOKEN", "test-application-token")
+os.environ.setdefault("HH_API_URL", "https://hh-api.example.invalid")
+os.environ.setdefault("HH_USER_AGENT", "HAIntly vacancy-service tests")
+os.environ.setdefault("CELERY_BROKER_URL", "redis://localhost:6379/12")
+os.environ.setdefault("CELERY_RESULT_BACKEND", "redis://localhost:6379/13")
+os.environ.setdefault("DICTIONARY_LOCK_URL", "redis://localhost:6379/14")
+os.environ.setdefault("VACANCY_DICTIONARY_MAX_AGE_HOURS", "24")
+os.environ.setdefault("PROFILE_SERVICE_URL", "https://profile-service.example.invalid")
+
+from models.dictionaries import (  # noqa: E402
     Area,
     Base,
     DictionaryItem,
@@ -15,7 +28,7 @@ from models.dictionaries import (
     ProfessionalRole,
     ProfessionalRoleCategory,
 )
-from settings import settings
+from settings import settings  # noqa: E402
 
 engine = create_async_engine(settings.database_url, poolclass=NullPool)
 TestSessionFactory = async_sessionmaker(engine, expire_on_commit=False, autoflush=False)
