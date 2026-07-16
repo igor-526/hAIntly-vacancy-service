@@ -9,6 +9,7 @@ from models.dictionaries import Language
 from utils.database import SessionFactory
 
 HEADERS = {"X-User-Id": "11111111-1111-4111-8111-111111111111"}
+pytestmark = pytest.mark.infrastructure
 
 
 @pytest.fixture(scope="module")

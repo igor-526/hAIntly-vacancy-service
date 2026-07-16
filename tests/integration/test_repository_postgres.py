@@ -7,6 +7,8 @@ from models.dictionaries import Language
 from repositories.dictionaries import apply_snapshot
 from utils.database import SessionFactory
 
+pytestmark = pytest.mark.infrastructure
+
 
 @pytest.mark.asyncio
 async def test_upsert_update_deactivate_reactivate_and_rollback():

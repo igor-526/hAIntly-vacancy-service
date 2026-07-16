@@ -5,12 +5,14 @@ from pathlib import Path
 from uuid import UUID, uuid4
 
 import asyncpg  # type: ignore[import-untyped]
+import pytest
 
 from settings import settings
 
 SERVICE_ROOT = Path(__file__).resolve().parents[2]
 BASE_REVISION = "20260714_0001"
 HEAD_REVISION = "20260714_0002"
+pytestmark = pytest.mark.infrastructure
 
 
 async def _admin_execute(statement: str) -> None:

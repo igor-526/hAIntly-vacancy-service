@@ -7,6 +7,8 @@ from redis.exceptions import LockNotOwnedError
 
 from settings import settings
 
+pytestmark = pytest.mark.infrastructure
+
 
 def test_lock_excludes_concurrent_owner_and_expired_owner_cannot_release():
     redis = Redis.from_url(str(settings.dictionary_lock_url))

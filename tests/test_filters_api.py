@@ -9,6 +9,8 @@ from main import app
 from models.dictionaries import Area, DictionaryItem, ProfessionalRole, ProfessionalRoleCategory
 from utils.database import get_session
 
+pytestmark = pytest.mark.infrastructure
+
 HH_USER_ID = "test_hh_user_api"
 
 

@@ -9,6 +9,8 @@ from utils.database import SessionFactory
 from utils.seeding import DICTIONARY_SYNC_STATE_SEEDS, seed_dictionary_sync_states
 from utils.seeding.dictionary_sync_states import DictionarySyncStateSeedConflict
 
+pytestmark = pytest.mark.infrastructure
+
 
 @pytest.mark.asyncio
 async def test_seed_is_idempotent_and_preserves_metadata() -> None:

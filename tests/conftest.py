@@ -22,7 +22,10 @@ TestSessionFactory = async_sessionmaker(engine, expire_on_commit=False, autoflus
 
 
 @pytest.fixture(scope="session", autouse=True)
-async def setup_database():
+async def setup_database(request: pytest.FixtureRequest):
+    if not any(item.get_closest_marker("infrastructure") for item in request.session.items):
+        yield
+        return
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     yield

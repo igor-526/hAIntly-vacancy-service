@@ -7,6 +7,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from core.schemas.filters import FilterPresetCreate, FilterPresetUpdate, FilterPresetValueIn
 from repositories.filters import create_preset, delete_preset, get_preset, list_presets, update_preset
 
+pytestmark = pytest.mark.infrastructure
+
 
 @pytest.mark.asyncio
 async def test_create_preset(session: AsyncSession, seed_dictionaries: dict, hh_user_id: str):
