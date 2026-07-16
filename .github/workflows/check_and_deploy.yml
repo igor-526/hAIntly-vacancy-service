@@ -5,8 +5,8 @@ on:
     branches:
       - release
 
-# env:
-#   IMAGE: ghcr.io/igor-526/haintly_main-be
+env:
+  IMAGE: ghcr.io/igor-526/haintly_vacancy-service
 
 jobs:
   test:
@@ -27,44 +27,44 @@ jobs:
       - name: test
         run: make test
 
-  # build_deploy:
-  #   runs-on: ubuntu-latest
-  #   needs: test
-  #   permissions:
-  #     contents: read
-  #     packages: write
-  #   steps:
-  #     - name: Checkout code
-  #       uses: actions/checkout@v6
+  build_deploy:
+    runs-on: ubuntu-latest
+    needs: test
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
 
-  #     - name: Log in to GitHub Container Registry
-  #       uses: docker/login-action@v3
-  #       with:
-  #         registry: ghcr.io
-  #         username: ${{ github.actor }}
-  #         password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-  #     - name: Build and push Docker image
-  #       uses: docker/build-push-action@v6
-  #       with:
-  #         context: .
-  #         push: true
-  #         tags: |
-  #           ${{ env.IMAGE }}:latest
-  #           ${{ env.IMAGE }}:${{ github.sha }}
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ env.IMAGE }}:latest
+            ${{ env.IMAGE }}:${{ github.sha }}
 
-  #     - name: Set up kubeconfig
-  #       run: |
-  #         mkdir -p ~/.kube
-  #         echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > ~/.kube/config
+      - name: Set up kubeconfig
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > ~/.kube/config
     
-  #     - uses: azure/setup-helm@v4
+      - uses: azure/setup-helm@v4
 
-  #     - name: Deploy
-  #       run: |
-  #         helm upgrade --install haintly-main-be .helm/ \
-  #           --namespace haintly \
-  #           --create-namespace \
-  #           --set imageTag=${{ github.sha }} \
-  #           --wait
+      - name: Deploy
+        run: |
+          helm upgrade --install haintly-vacancy-service .helm/ \
+            --namespace haintly \
+            --create-namespace \
+            --set imageTag=${{ github.sha }} \
+            --wait
 

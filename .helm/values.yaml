@@ -1,0 +1,33 @@
+# Deployment settings
+name: haintly-vacancy-service
+componentsLabel: haintly-vacancy-service
+replicaCount: 1
+namespace: haintly
+
+# App settings
+secretName: haintly-vacancy-service-secret
+containerPort: 8000
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+# Image settings
+image: ghcr.io/igor-526/haintly_vacancy-service
+imagePullSecertName: ghcr-secret
+imageTag: latest
+
+migration:
+  command: ["uv", "run", "alembic", "-c", "alembic.ini", "upgrade", "head"]
+  workingDir: /app/src
+
+workers:
+  - name: celery-beat
+    command: ["uv", "run", "--no-sync", "celery", "-A", "tasks.celery_app", "beat", "--loglevel=INFO", "--schedule=/tmp/celerybeat-schedule"]
+    replicas: 1
+  - name: celery-worker
+    command: ["uv", "run", "--no-sync", "celery", "-A", "tasks.celery_app", "worker", "--loglevel=INFO"]
+    replicas: 1
