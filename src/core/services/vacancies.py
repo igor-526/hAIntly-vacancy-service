@@ -11,9 +11,24 @@ from repositories.filters import get_preset
 def _preset_to_params(preset: FilterPreset) -> dict[str, Any]:
     params: dict[str, Any] = {}
     scalar_fields = [
-        "text", "excluded_text", "salary", "currency", "salary_mode", "period",
-        "date_from", "date_to", "order_by", "premium", "accept_temporary", "no_magic",
-        "top_lat", "bottom_lat", "left_lng", "right_lng", "sort_point_lat", "sort_point_lng",
+        "text",
+        "excluded_text",
+        "salary",
+        "currency",
+        "salary_mode",
+        "period",
+        "date_from",
+        "date_to",
+        "order_by",
+        "premium",
+        "accept_temporary",
+        "no_magic",
+        "top_lat",
+        "bottom_lat",
+        "left_lng",
+        "right_lng",
+        "sort_point_lat",
+        "sort_point_lng",
     ]
     for field in scalar_fields:
         value = getattr(preset, field)

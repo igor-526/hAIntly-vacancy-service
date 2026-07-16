@@ -5,7 +5,6 @@ from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.schemas.filters import FilterPresetCreate, FilterPresetUpdate, FilterPresetValueIn
-from models.filter_presets import FilterPreset
 from repositories.filters import create_preset, delete_preset, get_preset, list_presets, update_preset
 
 

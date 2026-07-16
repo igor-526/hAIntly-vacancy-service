@@ -31,7 +31,9 @@ class HHClient:
         "/languages",
     }
 
-    def __init__(self, *, base_url: str, user_agent: str, app_token: str, timeout: float, retries: int, backoff: float) -> None:
+    def __init__(
+        self, *, base_url: str, user_agent: str, app_token: str, timeout: float, retries: int, backoff: float
+    ) -> None:
         self.base_url = base_url.rstrip("/")
         self.headers = {"HH-User-Agent": user_agent}
         self.app_token = app_token

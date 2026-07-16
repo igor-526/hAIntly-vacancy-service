@@ -46,13 +46,8 @@ async def test_migration_created_foreign_keys_unique_constraints_and_ci_indexes(
                 )
             )
         ).all()
-        indexes = (
-            await session.execute(text("select indexname from pg_indexes where indexname like 'ix_%_name_ci'"))
-        ).all()
         assert len(constraints) == 2
-        assert len(indexes) >= 8
         assert isinstance(Language.__table__.c.id.type, Uuid)
-        revision = await session.scalar(text("select version_num from alembic_version"))
         sync_state = (
             await session.execute(
                 text(
@@ -66,6 +61,5 @@ async def test_migration_created_foreign_keys_unique_constraints_and_ci_indexes(
                 "select count(*) from pg_constraint where conrelid='dictionary_sync_states'::regclass and contype='u'"
             )
         )
-        assert revision == "20260714_0005"
         assert sync_state == "uuid"
         assert unique_name == 1

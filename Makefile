@@ -3,6 +3,7 @@
 format:
 	uv run ruff check . --fix
 	uv run ruff format .
+	@sh scripts/check-format-excludes.sh
 
 lint:
 	uv run mypy src tests

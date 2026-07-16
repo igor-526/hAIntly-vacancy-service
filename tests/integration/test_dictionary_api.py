@@ -13,6 +13,15 @@ HEADERS = {"X-User-Id": "11111111-1111-4111-8111-111111111111"}
 
 @pytest.fixture(scope="module")
 def client():
+    async def seed_languages() -> None:
+        async with SessionFactory() as session:
+            for hh_id, name in (("en", "Английский"), ("es", "Испанский")):
+                item = await session.scalar(select(Language).where(Language.hh_id == hh_id))
+                if item is None:
+                    session.add(Language(hh_id=hh_id, name=name, active=True))
+            await session.commit()
+
+    asyncio.run(seed_languages())
     with TestClient(app) as value:
         yield value
 

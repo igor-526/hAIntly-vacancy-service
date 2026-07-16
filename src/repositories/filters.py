@@ -71,9 +71,7 @@ async def validate_dictionary_values(session: AsyncSession, values: list[dict[st
 
         if param in DICTIONARY_MODELS:
             model = DICTIONARY_MODELS[param]
-            exists = await session.scalar(
-                select(model.id).where(model.hh_id == val, model.active.is_(True)).limit(1)
-            )
+            exists = await session.scalar(select(model.id).where(model.hh_id == val, model.active.is_(True)).limit(1))
             if not exists:
                 errors.append(f"Значение '{val}' не найдено в справочнике '{param}'")
         elif param in DICTIONARY_ITEM_CODES:
@@ -104,21 +102,16 @@ async def get_preset(session: AsyncSession, preset_id: UUID, hh_user_id: str) ->
 async def list_presets(
     session: AsyncSession, hh_user_id: str, q: str | None, limit: int, offset: int
 ) -> list[FilterPreset]:
-    stmt = select(FilterPreset).where(
-        FilterPreset.hh_user_id == hh_user_id, FilterPreset.active.is_(True)
-    )
+    stmt = select(FilterPreset).where(FilterPreset.hh_user_id == hh_user_id, FilterPreset.active.is_(True))
     if q:
         from sqlalchemy import func
 
         stmt = stmt.where(func.lower(FilterPreset.name).contains(q.lower(), autoescape=True))
     stmt = stmt.order_by(FilterPreset.created_at.desc()).limit(limit).offset(offset)
-    return (await session.scalars(stmt)).all()
+    return list((await session.scalars(stmt)).all())
 
 
-async def create_preset(
-    session: AsyncSession, hh_user_id: str, data: FilterPresetCreate
-) -> FilterPreset:
-    from sqlalchemy import func
+async def create_preset(session: AsyncSession, hh_user_id: str, data: FilterPresetCreate) -> FilterPreset:
 
     existing = await session.scalar(
         select(FilterPreset.id).where(
@@ -186,9 +179,24 @@ async def update_preset(
         preset.name = data.name
 
     scalar_fields = [
-        "text", "excluded_text", "salary", "currency", "salary_mode", "period",
-        "date_from", "date_to", "order_by", "premium", "accept_temporary", "no_magic",
-        "top_lat", "bottom_lat", "left_lng", "right_lng", "sort_point_lat", "sort_point_lng",
+        "text",
+        "excluded_text",
+        "salary",
+        "currency",
+        "salary_mode",
+        "period",
+        "date_from",
+        "date_to",
+        "order_by",
+        "premium",
+        "accept_temporary",
+        "no_magic",
+        "top_lat",
+        "bottom_lat",
+        "left_lng",
+        "right_lng",
+        "sort_point_lat",
+        "sort_point_lng",
     ]
     for field in scalar_fields:
         value = getattr(data, field)

@@ -82,7 +82,7 @@ async def search_vacancies(
             per_page=per_page,
         )
     except VacancyServiceError as exc:
-        raise HTTPException(exc.status_code, exc.message)
+        raise HTTPException(exc.status_code, exc.message) from exc
 
 
 @router.get("/{vacancy_id}")
@@ -98,4 +98,4 @@ async def get_vacancy(
     try:
         return await service.get_vacancy(vacancy_id=vacancy_id)
     except VacancyServiceError as exc:
-        raise HTTPException(exc.status_code, exc.message)
+        raise HTTPException(exc.status_code, exc.message) from exc

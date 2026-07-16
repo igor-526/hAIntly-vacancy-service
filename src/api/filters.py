@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.schemas.filters import (
     FilterPresetCreate,
+    FilterPresetListItem,
     FilterPresetListResponse,
     FilterPresetOut,
     FilterPresetUpdate,
@@ -44,7 +45,7 @@ async def list_filter_presets(
 ):
     presets = await list_presets(session, hh_user_id, q, limit, offset)
     return FilterPresetListResponse(
-        items=[{"id": p.id, "name": p.name} for p in presets],
+        items=[FilterPresetListItem(id=p.id, name=p.name) for p in presets],
         limit=limit,
         offset=offset,
     )

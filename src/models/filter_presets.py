@@ -1,7 +1,6 @@
-from datetime import datetime
 from uuid import UUID, uuid4
 
-from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Integer, String, Text, UniqueConstraint, func
+from sqlalchemy import Boolean, Float, ForeignKey, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from models.dictionaries import Base, Timestamped
@@ -32,7 +31,7 @@ class FilterPreset(Timestamped, Base):
     sort_point_lat: Mapped[float | None] = mapped_column(Float)
     sort_point_lng: Mapped[float | None] = mapped_column(Float)
 
-    values: Mapped[list["FilterPresetValue"]] = relationship(
+    values: Mapped[list[FilterPresetValue]] = relationship(
         back_populates="preset", cascade="all, delete-orphan", lazy="selectin"
     )
 
@@ -49,8 +48,6 @@ class FilterPresetValue(Base):
     parameter_name: Mapped[str] = mapped_column(String(100), nullable=False)
     value: Mapped[str] = mapped_column(String(200), nullable=False)
 
-    preset: Mapped["FilterPreset"] = relationship(back_populates="values")
+    preset: Mapped[FilterPreset] = relationship(back_populates="values")
 
-    __table_args__ = (
-        UniqueConstraint("preset_id", "parameter_name", "value", name="uq_filter_preset_values_pnv"),
-    )
+    __table_args__ = (UniqueConstraint("preset_id", "parameter_name", "value", name="uq_filter_preset_values_pnv"),)

@@ -35,6 +35,7 @@ asyncio_mode = "auto"
 [tool.ruff]
 line-length = 119
 target-version = "py314"
+extend-exclude = [".github", ".helm"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "ASYNC"]

@@ -48,7 +48,9 @@ async def test_header_and_bounded_retry(monkeypatch):
     Session.responses = [Response(503, {}), Response(200, [{"id": "ru", "name": "Русский"}])]
     Session.calls = 0
     monkeypatch.setattr(aiohttp, "ClientSession", Session)
-    client = HHClient(base_url="https://hh.invalid", user_agent="HAIntly/test", timeout=1, retries=1, backoff=0)
+    client = HHClient(
+        base_url="https://hh.invalid", user_agent="HAIntly/test", app_token="token", timeout=1, retries=1, backoff=0
+    )
     assert (await client.languages())[0]["id"] == "ru"
     assert Session.headers == {"HH-User-Agent": "HAIntly/test"}
     assert Session.calls == 2
@@ -59,7 +61,9 @@ async def test_timeout_stops_after_bound(monkeypatch):
     Session.responses = [TimeoutError(), TimeoutError(), TimeoutError()]
     Session.calls = 0
     monkeypatch.setattr(aiohttp, "ClientSession", Session)
-    client = HHClient(base_url="https://hh.invalid", user_agent="agent", timeout=0.01, retries=2, backoff=0)
+    client = HHClient(
+        base_url="https://hh.invalid", user_agent="agent", app_token="token", timeout=0.01, retries=2, backoff=0
+    )
     with pytest.raises(HHError):
         await client.languages()
     assert Session.calls == 3
@@ -69,6 +73,8 @@ async def test_timeout_stops_after_bound(monkeypatch):
 async def test_invalid_nested_payload_rejected(monkeypatch):
     Session.responses = [Response(200, [{"id": "1", "name": "root", "areas": [{"id": "2"}]}])]
     monkeypatch.setattr(aiohttp, "ClientSession", Session)
-    client = HHClient(base_url="https://hh.invalid", user_agent="agent", timeout=1, retries=0, backoff=0)
+    client = HHClient(
+        base_url="https://hh.invalid", user_agent="agent", app_token="token", timeout=1, retries=0, backoff=0
+    )
     with pytest.raises(HHError):
         await client.areas()

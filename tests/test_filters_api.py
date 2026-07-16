@@ -1,3 +1,4 @@
+from collections.abc import AsyncIterator
 from uuid import uuid4
 
 import pytest
@@ -5,24 +6,34 @@ from httpx2 import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from main import app
-from models.dictionaries import Area, DictionaryItem, ProfessionalRole
-from models.filter_presets import FilterPreset, FilterPresetValue
+from models.dictionaries import Area, DictionaryItem, ProfessionalRole, ProfessionalRoleCategory
+from utils.database import get_session
 
 HH_USER_ID = "test_hh_user_api"
 
 
 @pytest.fixture
-async def client() -> AsyncClient:
+async def client(session: AsyncSession) -> AsyncIterator[AsyncClient]:
+    async def override_session() -> AsyncIterator[AsyncSession]:
+        yield session
+
+    app.dependency_overrides[get_session] = override_session
     transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as c:
-        yield c
+    try:
+        async with AsyncClient(transport=transport, base_url="http://test") as c:
+            yield c
+    finally:
+        app.dependency_overrides.pop(get_session, None)
 
 
 @pytest.fixture(autouse=True)
 async def seed_api_dictionaries(session: AsyncSession):
     area = Area(hh_id="1", name="Москва", active=True)
     role = ProfessionalRole(hh_id="10", name="Программист", category_hh_id="1", active=True)
+    role_category = ProfessionalRoleCategory(hh_id="1", name="ИТ", active=True)
     label_item = DictionaryItem(dictionary_code="label", hh_id="direct", name="Без посредников", active=True)
+    session.add(role_category)
+    await session.flush()
     session.add_all([area, role, label_item])
     await session.flush()
 
@@ -129,7 +140,12 @@ async def test_update_filter_preset_values(client: AsyncClient):
 
     resp = await client.patch(
         f"/internal/filters/{preset_id}",
-        json={"values": [{"parameter_name": "area", "value": "1"}, {"parameter_name": "professional_role", "value": "10"}]},
+        json={
+            "values": [
+                {"parameter_name": "area", "value": "1"},
+                {"parameter_name": "professional_role", "value": "10"},
+            ]
+        },
         headers=HEADERS,
     )
     assert resp.status_code == 200

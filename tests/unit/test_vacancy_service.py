@@ -7,8 +7,7 @@ import pytest
 from core.schemas.vacancies import build_hh_query
 from core.services.vacancies import VacancyService, VacancyServiceError, _preset_to_params
 from infrastructure.hh import HHError
-from infrastructure.profile_service import ProfileServiceError
-from models.filter_presets import FilterPreset, FilterPresetValue
+from models.filter_presets import FilterPreset
 
 
 def _make_preset(**overrides: Any) -> FilterPreset:
@@ -139,43 +138,28 @@ class TestVacancyService:
         return client
 
     @pytest.fixture
-    def mock_profile_client(self):
-        client = MagicMock()
-        client.get_hh_token = AsyncMock(return_value="test_token")
-        return client
-
-    @pytest.fixture
     def mock_session(self):
         return MagicMock()
 
     @pytest.fixture
-    def service(self, mock_hh_client, mock_profile_client, mock_session):
-        return VacancyService(
-            hh_client=mock_hh_client,
-            profile_client=mock_profile_client,
-            session=mock_session,
-        )
+    def service(self, mock_hh_client, mock_session):
+        return VacancyService(hh_client=mock_hh_client, session=mock_session)
 
     @pytest.mark.asyncio
-    async def test_search_calls_hh_with_token(self, service, mock_hh_client, mock_profile_client):
+    async def test_search_calls_hh(self, service, mock_hh_client):
         result = await service.search(
-            account_id="acc-123",
             hh_user_id="user-123",
             params={},
             present_keys=set(),
             page=0,
             per_page=30,
         )
-        mock_profile_client.get_hh_token.assert_awaited_once_with("acc-123", refresh=True)
         mock_hh_client.search_vacancies.assert_awaited_once()
-        call_args = mock_hh_client.search_vacancies.call_args
-        assert call_args[0][1] == "test_token"
         assert result == {"items": [], "found": 0, "pages": 0}
 
     @pytest.mark.asyncio
     async def test_search_with_params(self, service, mock_hh_client):
         await service.search(
-            account_id="acc-123",
             hh_user_id="user-123",
             params={"text": "python"},
             present_keys={"text"},
@@ -187,37 +171,10 @@ class TestVacancyService:
         assert query["text"] == "python"
 
     @pytest.mark.asyncio
-    async def test_search_profile_service_refresh_failed(self, service, mock_profile_client):
-        mock_profile_client.get_hh_token = AsyncMock(side_effect=ProfileServiceError("hh_token_refresh_failed"))
-        with pytest.raises(VacancyServiceError) as exc_info:
-            await service.search(
-                account_id="acc-123",
-                hh_user_id="user-123",
-                params={},
-                present_keys=set(),
-            )
-        assert exc_info.value.status_code == 401
-
-    @pytest.mark.asyncio
-    async def test_search_profile_service_unavailable(self, service, mock_profile_client):
-        mock_profile_client.get_hh_token = AsyncMock(
-            side_effect=ProfileServiceError("connection error: TimeoutError")
-        )
-        with pytest.raises(VacancyServiceError) as exc_info:
-            await service.search(
-                account_id="acc-123",
-                hh_user_id="user-123",
-                params={},
-                present_keys=set(),
-            )
-        assert exc_info.value.status_code == 502
-
-    @pytest.mark.asyncio
     async def test_search_hh_auth_error(self, service, mock_hh_client):
         mock_hh_client.search_vacancies = AsyncMock(side_effect=HHError("authorization failed"))
         with pytest.raises(VacancyServiceError) as exc_info:
             await service.search(
-                account_id="acc-123",
                 hh_user_id="user-123",
                 params={},
                 present_keys=set(),
@@ -225,15 +182,14 @@ class TestVacancyService:
         assert exc_info.value.status_code == 401
 
     @pytest.mark.asyncio
-    async def test_get_vacancy_success(self, service, mock_hh_client, mock_profile_client):
-        result = await service.get_vacancy(account_id="acc-123", vacancy_id="456")
-        mock_profile_client.get_hh_token.assert_awaited_once_with("acc-123", refresh=True)
-        mock_hh_client.get_vacancy.assert_awaited_once_with("456", "test_token")
+    async def test_get_vacancy_success(self, service, mock_hh_client):
+        result = await service.get_vacancy(vacancy_id="456")
+        mock_hh_client.get_vacancy.assert_awaited_once_with("456")
         assert result == {"id": "123", "name": "Test"}
 
     @pytest.mark.asyncio
     async def test_get_vacancy_not_found(self, service, mock_hh_client):
         mock_hh_client.get_vacancy = AsyncMock(side_effect=HHError("unexpected status 404"))
         with pytest.raises(VacancyServiceError) as exc_info:
-            await service.get_vacancy(account_id="acc-123", vacancy_id="999")
+            await service.get_vacancy(vacancy_id="999")
         assert exc_info.value.status_code == 404
